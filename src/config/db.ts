@@ -1,12 +1,17 @@
-import mongoose from "mongoose";
+// src/config/db.ts
+import mongoose from 'mongoose';
 
-export const connectDB = async()=>{
-    try{
-        await mongoose.connect(process.env.MONGO_URI as string);
-        console.log("MongoDB Connected",mongoose.connection.name);
+export const connectDB = async () => {
+  const uri = process.env.MONGO_URI as string;
 
-    }catch(error){
-        console.error('MongoDB Connection failed', error);
-        process.exit(1)
-    }
-}
+  try {
+    await mongoose.connect(uri);
+    console.log('✅ MongoDB Connected:', mongoose.connection.name);
+  } catch (err) {
+    console.error('❌ MongoDB Connection failed:', err);
+
+    // Optional: Retry every 5 seconds until it succeeds
+    console.log('Retrying connection in 5 seconds...');
+    setTimeout(connectDB, 5000);
+  }
+};

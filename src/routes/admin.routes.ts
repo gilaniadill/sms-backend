@@ -10,12 +10,12 @@ updateAdmin
 
 const router = Router()
 
-router.post("/",createAdmin)
+router.post("/",protect,createAdmin)
 
-router.get("/",getAdmins)
+router.get("/",protect,getAdmins)
 
-router.put("/:id", updateAdmin);
+router.put("/:id",protect, updateAdmin);
 
-router.delete("/:id",deleteAdmin)
+router.delete("/:id",protect,deleteAdmin)
 
 export default router

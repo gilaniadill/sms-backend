@@ -11,7 +11,7 @@ export const connectDB = async () => {
     console.error('❌ MongoDB Connection failed:', err);
 
     // Optional: Retry every 5 seconds until it succeeds
-    console.log('Retrying connection in 5 seconds...');
-    setTimeout(connectDB, 5000);
+    // console.log('Retrying connection in 5 seconds...');
+    // setTimeout(connectDB, 5000);
   }
 };

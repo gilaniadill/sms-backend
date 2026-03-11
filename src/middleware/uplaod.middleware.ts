@@ -14,7 +14,8 @@ const storage = multer.diskStorage({
   },
   filename: (_req, file, cb) => {
     const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, `${file.fieldname}-${uniqueName}${path.extname(file.originalname)}`);
+    const ext = path.extname(file.originalname);
+    cb(null, `photo-${uniqueName}${ext}`);
   }
 });
 
@@ -22,9 +23,9 @@ export const uploadStudentphoto = multer({
   storage,
   limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
   fileFilter: (_req, file, cb) => {
-    const allowTypes = /jpeg|jpg|png/;
-    const isValidMime = allowTypes.test(file.mimetype);
-    const isValidExt = allowTypes.test(path.extname(file.originalname).toLowerCase());
+    const allowedTypes = /jpeg|jpg|png/;
+    const isValidMime = allowedTypes.test(file.mimetype);
+    const isValidExt = allowedTypes.test(path.extname(file.originalname).toLowerCase());
 
     if (isValidMime && isValidExt) {
       cb(null, true);

@@ -18,18 +18,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/auth",authRoutes)
-app.use("/api/admins",adminRoutes)
+app.use("/api/auth", authRoutes);
+app.use("/api/admins", adminRoutes);
 
-// ✅ All API routes now under /api
 app.use('/api/students', studentRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/results', resultRoutes);
 
-// Static files for uploads (keep as is)
-app.use('/api/uploads', express.static(path.join(process.cwd(), 'uploads')));
+// ✅ Serve uploaded files from the 'uploads' directory at the root path
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.get('/', (_req, res) => {
     res.send('School Management API Running');

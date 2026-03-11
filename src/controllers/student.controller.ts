@@ -4,28 +4,24 @@ import mongoose from "mongoose";
 import fs from 'fs';
 import path from 'path';
 
-// Create new Student (POST API)
+// Define upload directory (consistent with multer config)
+const UPLOAD_DIR = path.join(process.cwd(), 'uploads', 'students');
+
+// Create new Student
 export const createStudent = async (req: Request, res: Response) => {
     try {
         const studentData = req.body;
-
         if (req.file) {
-            studentData.photo = req.file.path;
+            // Store only the filename
+            studentData.photo = req.file.filename;
         }
-        const student = await Student.create(req.body);
-
-        res.status(201).json({
-            success: true,
-            data: student
-        });
-
+        const student = await Student.create(studentData);
+        res.status(201).json({ success: true, data: student });
     } catch (error: any) {
-        res.status(400).json({
-            success: false,
-            data: error.message
-        });
+        res.status(400).json({ success: false, data: error.message });
     }
-}
+};
+
 // Get ALL
 export const getAllStudents = async (req: Request, res: Response) => {
     try {
@@ -111,50 +107,38 @@ export const getStudentById = async (req: Request, res: Response) => {
     }
 }
 
-// Update student (PUT API) - Fixed
+// Update student
 export const updateStudent = async (req: Request, res: Response) => {
     try {
         const studentId = req.params.id;
-
-        // Find student first
         const student = await Student.findById(studentId);
         if (!student) {
-            return res.status(404).json({
-                success: false,
-                message: 'Student not found'
-            });
+            return res.status(404).json({ success: false, message: 'Student not found' });
         }
 
         // Handle photo replacement
         if (req.file) {
-            // Delete old photo if exists
+            // Delete old photo if exists (using stored filename)
             if (student.photo) {
-                const oldPhotoPath = path.join(__dirname, '../../', student.photo);
+                const oldPhotoPath = path.join(UPLOAD_DIR, student.photo);
                 if (fs.existsSync(oldPhotoPath)) {
                     fs.unlinkSync(oldPhotoPath);
                 }
             }
-            req.body.photo = req.file.path;
+            // Store new filename
+            req.body.photo = req.file.filename;
         }
 
         const updatedStudent = await Student.findByIdAndUpdate(
-            studentId, 
+            studentId,
             req.body,
             { new: true, runValidators: true }
         );
-
-        res.status(200).json({
-            success: true,
-            data: updatedStudent
-        });
+        res.status(200).json({ success: true, data: updatedStudent });
     } catch (error: any) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+        res.status(400).json({ success: false, message: error.message });
     }
-}
-
+};
 // Delete Student (DELETE API) - Fixed
 export const deleteStudent = async (req: Request, res: Response) => {
     try {
@@ -167,9 +151,9 @@ export const deleteStudent = async (req: Request, res: Response) => {
             });
         }
 
-        // Delete photo if exists
+       // Delete photo if exists
         if (student.photo) {
-            const photoPath = path.join(__dirname, '../../', student.photo);
+            const photoPath = path.join(UPLOAD_DIR, student.photo);
             if (fs.existsSync(photoPath)) {
                 fs.unlinkSync(photoPath);
             }
@@ -206,11 +190,9 @@ export const deleteSelectedStudents = async (req: Request, res: Response) => {
         
         // Find students
         const students = await Student.find({ _id: { $in: validIds } });
-
-        // Delete photos
         students.forEach((student) => {
             if (student.photo) {
-                const photoPath = path.join(__dirname, '../../', student.photo);
+                const photoPath = path.join(UPLOAD_DIR, student.photo);
                 if (fs.existsSync(photoPath)) {
                     fs.unlinkSync(photoPath);
                 }

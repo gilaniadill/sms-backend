@@ -60,7 +60,6 @@ export const getPrintData = async (req: Request, res: Response) => {
   try {
     const { examId, studentIds } = req.body;
 
-    // Use .lean() to get plain objects – no .toObject() needed
     const results = await Result.find({ exam: examId, student: { $in: studentIds } })
       .populate({
         path: 'student',
@@ -69,18 +68,23 @@ export const getPrintData = async (req: Request, res: Response) => {
       .populate('exam')
       .lean();
 
-    // Fetch exam separately to extract subjects from its group
     const exam = await Exam.findById(examId).populate('class').lean();
-    if (!exam) {
-      return res.status(404).json({ success: false, message: 'Exam not found' });
+    if (!exam) return res.status(404).json({ success: false, message: 'Exam not found' });
+
+    // Try to get subjects from group, otherwise use exam snapshot
+    let subjects: any[] = [];
+    const classDoc = exam.class as any;
+    if (classDoc && exam.group) {
+      const group = classDoc.groups?.find((g: any) => g.name === exam.group);
+      if (group && group.subjects) {
+        subjects = group.subjects;
+      }
+    }
+    // Fallback to exam's own subjects if group subjects missing
+    if (subjects.length === 0 && exam.subjects) {
+      subjects = exam.subjects;
     }
 
-    // Extract subjects from the exam's group
-    const classDoc = exam.class as any; // You can define a proper interface here
-    const group = classDoc.groups?.find((g: any) => g.name === exam.group);
-    const subjects = group ? group.subjects : [];
-
-    // Enrich each result with the exam subjects
     const enrichedResults = results.map(r => ({
       ...r,
       exam: {
@@ -91,6 +95,7 @@ export const getPrintData = async (req: Request, res: Response) => {
 
     res.json({ success: true, data: enrichedResults });
   } catch (error: any) {
+    console.error('Print API error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -28,7 +28,7 @@ app.use('/api/exams', examRoutes);
 app.use('/api/results', resultRoutes);
 
 // ✅ Serve uploaded files from the 'uploads' directory at the root path
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use('/api/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.get('/', (_req, res) => {
     res.send('School Management API Running');

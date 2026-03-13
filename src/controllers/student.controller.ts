@@ -13,7 +13,7 @@ export const createStudent = async (req: Request, res: Response) => {
         const studentData = req.body;
         if (req.file) {
             // Store only the filename
-            studentData.photo = req.file.filename;
+           studentData.photo = req.file?.path;
         }
         const student = await Student.create(studentData);
         res.status(201).json({ success: true, data: student });
@@ -109,35 +109,36 @@ export const getStudentById = async (req: Request, res: Response) => {
 
 // Update student
 export const updateStudent = async (req: Request, res: Response) => {
-    try {
-        const studentId = req.params.id;
-        const student = await Student.findById(studentId);
-        if (!student) {
-            return res.status(404).json({ success: false, message: 'Student not found' });
-        }
+  try {
+    const studentId = req.params.id;
 
-        // Handle photo replacement
-        if (req.file) {
-            // Delete old photo if exists (using stored filename)
-            if (student.photo) {
-                const oldPhotoPath = path.join(UPLOAD_DIR, student.photo);
-                if (fs.existsSync(oldPhotoPath)) {
-                    fs.unlinkSync(oldPhotoPath);
-                }
-            }
-            // Store new filename
-            req.body.photo = req.file.filename;
-        }
-
-        const updatedStudent = await Student.findByIdAndUpdate(
-            studentId,
-            req.body,
-            { new: true, runValidators: true }
-        );
-        res.status(200).json({ success: true, data: updatedStudent });
-    } catch (error: any) {
-        res.status(400).json({ success: false, message: error.message });
+    const student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).json({ success: false, message: "Student not found" });
     }
+
+    // If new photo uploaded
+    if (req.file) {
+      req.body.photo = req.file.path; // Cloudinary URL
+    }
+
+    const updatedStudent = await Student.findByIdAndUpdate(
+      studentId,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: updatedStudent
+    });
+
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
 };
 // Delete Student (DELETE API) - Fixed
 export const deleteStudent = async (req: Request, res: Response) => {

@@ -1,44 +1,33 @@
-import { Request,Response } from "express"
-import Admin from "../models/admin.model"
-import bcrypt from "bcryptjs"
+import { Request, Response } from "express";
+import Admin from "../models/admin.model";
+import bcrypt from "bcryptjs";
 
+export const createAdmin = async (req: Request, res: Response) => {
+  const { name, email, password, role } = req.body;
+  const hash = await bcrypt.hash(password, 10);
+  const admin = await Admin.create({
+    name,
+    email,
+    password: hash,
+    role: role || 'admin', // default to admin if not provided
+  });
+  res.json(admin);
+};
 
+export const getAdmins = async (req: Request, res: Response) => {
+  const admins = await Admin.find().select("-password");
+  res.json(admins);
+};
 
-export const createAdmin = async(req:Request,res:Response)=>{
-
-const {name,email,password} = req.body
-
-const hash = await bcrypt.hash(password,10)
-
-const admin = await Admin.create({
-name,
-email,
-password:hash
-})
-
-res.json(admin)
-
-}
-
-
-
-export const getAdmins = async(req:Request,res:Response)=>{
-
-const admins = await Admin.find().select("-password")
-
-res.json(admins)
-
-}
-// Update Admin
 export const updateAdmin = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     const updateData: any = {};
-
     if (name) updateData.name = name;
     if (email) updateData.email = email;
+    if (role) updateData.role = role;
     if (password) {
       const hash = await bcrypt.hash(password, 10);
       updateData.password = hash;
@@ -47,7 +36,7 @@ export const updateAdmin = async (req: Request, res: Response) => {
     const updatedAdmin = await Admin.findByIdAndUpdate(
       id,
       updateData,
-      { new: true } // return updated document
+      { new: true }
     ).select("-password");
 
     if (!updatedAdmin)
@@ -59,13 +48,7 @@ export const updateAdmin = async (req: Request, res: Response) => {
   }
 };
 
-
-export const deleteAdmin = async(req:Request,res:Response)=>{
-
-await Admin.findByIdAndDelete(req.params.id)
-
-res.json({
-message:"Admin deleted"
-})
-
-}
+export const deleteAdmin = async (req: Request, res: Response) => {
+  await Admin.findByIdAndDelete(req.params.id);
+  res.json({ message: "Admin deleted" });
+};

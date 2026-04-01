@@ -1,21 +1,18 @@
-import { Router } from "express"
-import { protect } from "../middleware/auth.middleware"
-
+import { Router } from "express";
+import { protect, superAdminOnly } from "../middleware/auth.middleware";
 import {
-createAdmin,
-getAdmins,
-deleteAdmin,
-updateAdmin
-} from "../controllers/admin.controller"
+  createAdmin,
+  getAdmins,
+  deleteAdmin,
+  updateAdmin,
+} from "../controllers/admin.controller";
 
-const router = Router()
+const router = Router();
 
-router.post("/",protect,createAdmin)
+// All admin routes require authentication and superadmin role
+router.post("/", protect, superAdminOnly, createAdmin);
+router.get("/", protect, superAdminOnly, getAdmins);
+router.put("/:id", protect, superAdminOnly, updateAdmin);
+router.delete("/:id", protect, superAdminOnly, deleteAdmin);
 
-router.get("/",protect,getAdmins)
-
-router.put("/:id",protect, updateAdmin);
-
-router.delete("/:id",protect,deleteAdmin)
-
-export default router
+export default router;

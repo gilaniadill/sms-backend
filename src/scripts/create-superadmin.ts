@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import path from 'path';
-import Admin from '../src/models/admin.model'; // adjust if your models are in src/models
+import Admin from '../models/admin.model'; // adjust if your models are in src/models
 
 // Load environment variables from the .env file at the project root
 dotenv.config({ path: path.join(__dirname, '../.env') });
